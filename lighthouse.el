@@ -32,7 +32,7 @@
   :group 'application)
 
 (defcustom lighthouse-account ""
-  "Lighthouse account. (e.g. foo: foo.lighthouseapp."
+  "Lighthouse account. (e.g. foo: foo.lighthouseapp.com"
   :group 'lighthouse
   :type 'string)
 
