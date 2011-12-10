@@ -48,7 +48,7 @@
 (defun xml-get-content (node)
   (caddr node))
 (defun xml-first-child-named (parentnode name)
-  (car (xml-get-children proj name)))
+  (car (xml-get-children parentnode name)))
 
 
 ;;;;;;;;;;;;;;;;;;;;;
