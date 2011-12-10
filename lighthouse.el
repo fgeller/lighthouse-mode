@@ -50,6 +50,22 @@
 (defun xml-first-child-named (parentnode name)
   (car (xml-get-children proj name)))
 
+
+;;;;;;;;;;;;;;;;;;;;;
+;; Lighthouse mode ;;
+;;;;;;;;;;;;;;;;;;;;;
+
+;;;###autoload
+(defun lighthouse-mode ()
+  "Major mode for managing Lighthouse projects."
+  (interactive)
+  (switch-to-buffer "*Lighthouse*")
+  (kill-all-local-variables)
+  (setq major-mode 'lighthouse-mode
+        mode-name "Lighthouse")
+  (run-hooks 'lighthouse-mode-hook)
+  (insert "Lighthouse"))
+
 (defun lighthouse-display-project-names ()
   (interactive)
   (let* ((url-request-method "GET")
