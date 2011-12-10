@@ -55,6 +55,9 @@
 ;; Lighthouse mode ;;
 ;;;;;;;;;;;;;;;;;;;;;
 
+(defvar lighthouse-projects nil)
+
+
 ;;;###autoload
 (defun lighthouse-mode ()
   "Major mode for managing Lighthouse projects."
@@ -64,23 +67,35 @@
   (setq major-mode 'lighthouse-mode
         mode-name "Lighthouse")
   (run-hooks 'lighthouse-mode-hook)
-  (insert "Lighthouse"))
+  (lighthouse-load-projects)
+  (lighthouse-create-main-buffer))
 
-(defun lighthouse-display-project-names ()
-  (interactive)
+
+(defun lighthouse-create-main-buffer ()
+  (insert "Projects\n\n")
+  (dolist (project lighthouse-projects)
+    (insert (format "%s\n" (cdr (assoc 'name project))))))
+
+
+(defun lighthouse-load-projects ()
+  (setq lighthouse-projects nil)
+  (let* ((xml-projects (lighthouse-get-request "/projects.xml")))
+    (dolist (xml-project (xml-get-children xml-projects 'project))
+      (let ((project-name (xml-get-content (xml-first-child-named xml-project 'name)))
+            (project-id (xml-get-content (xml-first-child-named xml-project 'id))))
+        (push `((id . ,project-id) (name . ,project-name)) lighthouse-projects)))))
+
+
+(defun lighthouse-get-request (path)
   (let* ((url-request-method "GET")
          (url-request-extra-headers `(("X-LighthouseToken" . ,lighthouse-api-token)))
          (lighthouse-url (format "http://%s.lighthouseapp.com" lighthouse-account))
-         (lighthouse-projects-url (format "%s/projects.xml" lighthouse-url)))
-    (url-retrieve
-     lighthouse-projects-url
-     (lambda (status)
-       (re-search-forward "<?xml version")
-       (beginning-of-line)
-       (let ((projects (car (xml-parse-region (point) (point-max))))
-             (names ()))
-         (dolist (proj (xml-get-children projects 'project))
-           (push (xml-get-content (xml-first-child-named proj 'name)) names))
-         (message "Projects: %s" names))))))
+         (lighthouse-projects-url (format "%s%s" lighthouse-url "/projects.xml"))
+         (response-buffer (url-retrieve-synchronously lighthouse-projects-url)))
+    (with-current-buffer response-buffer
+      (re-search-backward "<?xml version=")
+      (beginning-of-line)
+      (car (xml-parse-region (point) (point-max))))))
+
 
 (provide 'lighthouse-mode)
